@@ -4534,7 +4534,7 @@ async function run() {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         title: "Oh no!",
-        labels: "bug",
+        labels: ["bug"],
         body: report.msg,
       });
 
