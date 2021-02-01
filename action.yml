@@ -1,0 +1,14 @@
+name: "Provide feedback"
+author: mattdavis0351
+description: "use the output of other grading actions to provide feedback to learners"
+inputs:
+  github-token:
+    description: "Token for API access, use GITHUB_TOKEN"
+    required: true
+  feedback:
+    description: "The feedback from a previous action step"
+    required: true
+
+runs:
+  using: "node12"
+  main: "dist/index.js"

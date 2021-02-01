@@ -1,0 +1,24 @@
+{
+  "name": "looking-glass-action",
+  "version": "1.0.0",
+  "description": "provides feedback to learners based on the outcome of their validation lab grader workflow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/githubtraining/looking-glass-action.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/githubtraining/looking-glass-action/issues"
+  },
+  "homepage": "https://github.com/githubtraining/looking-glass-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  }
+}
