@@ -15,7 +15,7 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
       msg: "some string that contains a message",
     },
     {
-      filename: "can be empty if no file is associated with the report",
+      filename: "",
       isCorrect: false,
       display_type: "issues",
       level: "fatal",
@@ -26,13 +26,13 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
 }
 ```
 
-| Key            | Value   | Description                                                                                                                                | Required | Values                                                                                        |
-| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------- |
-| `filename`     | string  | If there is a file associated with the report pass its full path as the value to `filename`                                                | NO       | Any string                                                                                    |
-| `isCorrect`    | Boolean | Was the task associated with this report completed correctly?                                                                              | YES      | <ul><li>true</li><li>false</li></ul>                                                          |
-| `level`        | string  | What is the severity of the report? Useful for applying labels to issues or highlighting text and other data in the GitHub Actions runner  | YES      | <ul><li>info</li><li>warning</li><li>fatal</li></ul>                                          |
-| `display_type` | string  | Desired GitHub repository feature to use for displaying `msg`.                                                                             | YES      | <ul><li>actions</li><li>issues</li><li>pages</li><li>projects</li><li>pull_requests</li></ul> |
-| `msg`          | string  | Message to be provided to the user.                                                                                                        | YES      | Any string                                                                                    |
+| Key            | Value   | Description                                                                                                                               | Required | Values                                                                                        |
+| -------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `filename`     | string  | If there is a file associated with the report pass its full path as the value to `filename`                                               | NO       | Any string                                                                                    |
+| `isCorrect`    | Boolean | Was the task associated with this report completed correctly?                                                                             | YES      | <ul><li>true</li><li>false</li></ul>                                                          |
+| `level`        | string  | What is the severity of the report? Useful for applying labels to issues or highlighting text and other data in the GitHub Actions runner | YES      | <ul><li>info</li><li>warning</li><li>fatal</li></ul>                                          |
+| `display_type` | string  | Desired GitHub repository feature to use for displaying `msg`.                                                                            | YES      | <ul><li>actions</li><li>issues</li><li>pages</li><li>projects</li><li>pull_requests</li></ul> |
+| `msg`          | string  | Message to be provided to the user.                                                                                                       | YES      | Any string                                                                                    |
 
 ## Using Looking Glass
 
