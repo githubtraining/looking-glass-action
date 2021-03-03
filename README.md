@@ -1,6 +1,6 @@
 # looking-glass-action
 
-Looking Glass is a reporting agent that provides feedback to users based on a payload signature. Looking Glass reads the output of a previous GitHub action. To use Looking Glass your action will need to **set output** matching the following payload signature.
+Looking Glass is a reporting agent that provides feedback to users based on a payload signature. Looking Glass reads the output of a previous GitHub action and then reports that output to the repository in a configurable manner. To use Looking Glass your action will need to **set output** matching the following payload signature.
 
 **Sample payload signature (:warning: not compatible with POC actions at the moment)**
 
