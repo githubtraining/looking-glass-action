@@ -12,15 +12,22 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
       isCorrect: true,
       level: "info",
       display_type: "actions",
-      msg: "some string that contains a message",
+      msg: "the message",
+      error: {
+        expected: "the expected string",
+        got: "the gotten string"
+      }
     },
     {
       filename: "",
       isCorrect: false,
       display_type: "issues",
       level: "fatal",
-      msg:
-        "# something was incorrect\n**expected:** some correct answer\n**got:** some incorrect answer",
+      msg: "the message",
+      error: {
+        expected: "",
+        got: ""
+      }
     },
   ];
 }
