@@ -65,11 +65,11 @@ async function run() {
 
     //   return;
     // }
-    if (report.level === "warning" || report.level === "fatal") {
-      core.warning(report.msg);
-    } else {
-      core.info(report.msg);
-    }
+    // if (report.level === "warning" || report.level === "fatal") {
+    //   core.warning(report.msg);
+    // } else {
+    //   core.info(report.msg);
+    // }
   } catch (error) {
     core.setFailed(error);
   }
