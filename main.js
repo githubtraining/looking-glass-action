@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
-const { Feedback } = require("./lib/feedback");
+const { LookingGlass } = require("./lib/lookingGlass");
 
 async function run() {
   try {
@@ -38,12 +38,12 @@ async function run() {
     const token = core.getInput("github-token");
     const octokit = github.getOctokit(token);
     const context = github.context;
-    const feedback = new Feedback(octokit, context, ...reports);
+    const lookingGlass = new LookingGlass(octokit, context, ...reports);
 
     for (const report of feedback.reports) {
       switch (report.display_type) {
         case "issues":
-          feedback.provideFeebackUsingIssues(report);
+          lookingGlass.provideFeebackUsingIssues(report);
           break;
         // case "pull_requests":
         //   feedback.createPullRequests(octokit, report.msg);
