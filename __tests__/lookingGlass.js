@@ -105,5 +105,47 @@ describe("Looking Glass Methods", () => {
       const res = lookingGlass.validatePayloadSignature();
       expect(res.value.reports[0].msg).toStrictEqual("Error");
     });
+
+    it("Should set the error.expected value to null if no text is provided", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "fatal",
+            msg: "",
+            error: {
+              expected: "",
+              got: "",
+            },
+          },
+        ],
+      };
+      const lookingGlass = new LookingGlass(feedback);
+      const res = lookingGlass.validatePayloadSignature();
+      expect(res.value.reports[0].error.expected).toStrictEqual(null);
+    });
+
+    it("Should set the error.got value to null if no text is provided", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "fatal",
+            msg: "",
+            error: {
+              expected: "",
+              got: "",
+            },
+          },
+        ],
+      };
+      const lookingGlass = new LookingGlass(feedback);
+      const res = lookingGlass.validatePayloadSignature();
+      expect(res.value.reports[0].error.got).toStrictEqual(null);
+    });
   });
 });
