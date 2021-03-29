@@ -84,5 +84,26 @@ describe("Looking Glass Methods", () => {
         },
       ]);
     });
+
+    it("Should set the msg value to 'Error' if no text is provided", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "fatal",
+            msg: "",
+            error: {
+              expected: "",
+              got: "",
+            },
+          },
+        ],
+      };
+      const lookingGlass = new LookingGlass(feedback);
+      const res = lookingGlass.validatePayloadSignature();
+      expect(res.value.reports[0].msg).toStrictEqual("Error");
+    });
   });
 });
