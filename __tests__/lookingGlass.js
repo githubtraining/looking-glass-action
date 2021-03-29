@@ -1,4 +1,4 @@
-const { LookingGlass } = require("../lib/lookingGlass");
+const LookingGlass = require("../lib/lookingGlass");
 
 describe("Looking Glass Methods", () => {
   let octokit;
@@ -39,14 +39,14 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(octokit, context, feedback);
+      const lookingGlass = new LookingGlass(feedback);
       const res = lookingGlass.validatePayloadSignature();
       expect(res.error).toBe(undefined);
     });
 
     it("Should fail if the payload is empty", () => {
       const feedback = {};
-      const lookingGlass = new LookingGlass(octokit, context, feedback);
+      const lookingGlass = new LookingGlass(feedback);
       const res = lookingGlass.validatePayloadSignature();
       expect(res.error.details).toStrictEqual([
         {
@@ -68,7 +68,7 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(octokit, context, feedback);
+      const lookingGlass = new LookingGlass(feedback);
       const res = lookingGlass.validatePayloadSignature();
       expect(res.error.details).toStrictEqual([
         {

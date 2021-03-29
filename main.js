@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
-const { LookingGlass } = require("./lib/lookingGlass");
+const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
   try {
@@ -9,10 +9,10 @@ async function run() {
 
     const feedback = JSON.parse(fb);
 
-    const token = core.getInput("github-token");
-    const octokit = github.getOctokit(token);
-    const context = github.context;
-    const lookingGlass = new LookingGlass(octokit, context, feedback);
+    // const token = core.getInput("github-token");
+    // const octokit = github.getOctokit(token);
+    // const context = github.context;
+    const lookingGlass = new LookingGlass(feedback);
 
     for (const report of lookingGlass.feedback.reports) {
       switch (report.display_type) {
