@@ -6,7 +6,7 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
 
 ```javascript
 {
-  report: [
+  reports: [
     {
       filename: "the filename associated with the report",
       isCorrect: true,
@@ -15,8 +15,8 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
       msg: "the message",
       error: {
         expected: "the expected string",
-        got: "the gotten string"
-      }
+        got: "the gotten string",
+      },
     },
     {
       filename: "",
@@ -26,8 +26,8 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
       msg: "the message",
       error: {
         expected: "",
-        got: ""
-      }
+        got: "",
+      },
     },
   ];
 }
