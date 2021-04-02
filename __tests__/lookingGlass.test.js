@@ -1,16 +1,7 @@
 const LookingGlass = require("../lib/lookingGlass");
 
 describe("Looking Glass Methods", () => {
-  let octokit;
-  let context;
-  beforeAll(() => {
-    octokit = {
-      title: null,
-    };
-    context = {
-      title: null,
-    };
-  });
+  const lookingGlass = new LookingGlass("");
   describe("validatePayloadSignature method tests", () => {
     it("Should pass if the payload matches the signature schema", () => {
       const feedback = {
@@ -39,14 +30,15 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(feedback);
+      // lookinGlass.feedback = feedback
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
       expect(res.error).toBe(undefined);
     });
 
     it("Should fail if the payload is empty", () => {
       const feedback = {};
-      const lookingGlass = new LookingGlass(feedback);
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
       expect(res.error.details).toStrictEqual([
         {
@@ -68,21 +60,10 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(feedback);
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
-      expect(res.error.details).toStrictEqual([
-        {
-          message: '"reports[0].bread" is not allowed',
-          path: ["reports", 0, "bread"],
-          type: "object.unknown",
-          context: {
-            child: "bread",
-            label: "reports[0].bread",
-            value: "crumbs",
-            key: "bread",
-          },
-        },
-      ]);
+      console.log(res.error.name);
+      expect(res.error.name).toBe("ValidationError");
     });
 
     it("Should set the msg value to 'Error' if no text is provided", () => {
@@ -101,7 +82,7 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(feedback);
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
       expect(res.value.reports[0].msg).toStrictEqual("Error");
     });
@@ -122,7 +103,7 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(feedback);
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
       expect(res.value.reports[0].error.expected).toStrictEqual(null);
     });
@@ -143,7 +124,7 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      const lookingGlass = new LookingGlass(feedback);
+      lookingGlass.feedback = feedback;
       const res = lookingGlass.validatePayloadSignature();
       expect(res.value.reports[0].error.got).toStrictEqual(null);
     });
