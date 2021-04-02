@@ -1,7 +1,11 @@
 const LookingGlass = require("../lib/lookingGlass");
 
 describe("Looking Glass Methods", () => {
-  const lookingGlass = new LookingGlass("");
+  let lookingGlass;
+  beforeEach(() => {
+    lookingGlass = new LookingGlass("");
+  });
+
   describe("validatePayloadSignature method tests", () => {
     it("Should pass if the payload matches the signature schema", () => {
       const feedback = {
@@ -30,27 +34,24 @@ describe("Looking Glass Methods", () => {
           },
         ],
       };
-      // lookinGlass.feedback = feedback
+
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      expect(res.error).toBe(undefined);
+      expect(() => {
+        lookingGlass.validatePayloadSignature();
+      }).not.toThrow();
     });
 
-    it("Should fail if the payload is empty", () => {
+    it("Should throw an error if the payload is empty", () => {
       const feedback = {};
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      expect(res.error.details).toStrictEqual([
-        {
-          message: '"reports" is required',
-          path: ["reports"],
-          type: "any.required",
-          context: { label: "reports", key: "reports" },
-        },
-      ]);
+      expect(() => {
+        lookingGlass.validatePayloadSignature();
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
     });
 
-    it("Should fail if the payload contains unsupported keys", () => {
+    it("Should throw an error if the payload contains unsupported schema keys", () => {
       const feedback = {
         reports: [
           {
@@ -61,12 +62,14 @@ describe("Looking Glass Methods", () => {
         ],
       };
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      console.log(res.error.name);
-      expect(res.error.name).toBe("ValidationError");
+      expect(() => {
+        lookingGlass.validatePayloadSignature();
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
     });
 
-    it("Should set the msg value to 'Error' if no text is provided", () => {
+    it("Should set the msg value to 'Error' if no msg text is provided", () => {
       const feedback = {
         reports: [
           {
@@ -76,18 +79,18 @@ describe("Looking Glass Methods", () => {
             level: "fatal",
             msg: "",
             error: {
-              expected: "",
-              got: "",
+              expected: "expected value",
+              got: "got value",
             },
           },
         ],
       };
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      expect(res.value.reports[0].msg).toStrictEqual("Error");
+      const reports = lookingGlass.validatePayloadSignature();
+      expect(reports[0].msg).toStrictEqual("Error");
     });
 
-    it("Should set the error.expected value to null if no text is provided", () => {
+    it("Should throw an error if the msg value is 'Error' and no error.expect and error.got text is provided", () => {
       const feedback = {
         reports: [
           {
@@ -95,7 +98,7 @@ describe("Looking Glass Methods", () => {
             isCorrect: false,
             display_type: "issues",
             level: "fatal",
-            msg: "",
+            msg: "Error",
             error: {
               expected: "",
               got: "",
@@ -104,11 +107,14 @@ describe("Looking Glass Methods", () => {
         ],
       };
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      expect(res.value.reports[0].error.expected).toStrictEqual(null);
+      expect(() => {
+        lookingGlass.validatePayloadSignature();
+      }).toThrowError(
+        "error.expected and error.got cannot be blank if msg is 'Error'"
+      );
     });
 
-    it("Should set the error.got value to null if no text is provided", () => {
+    it("Should set the error.expected value to null if no expected text is provided and a valid msg exists", () => {
       const feedback = {
         reports: [
           {
@@ -116,7 +122,7 @@ describe("Looking Glass Methods", () => {
             isCorrect: false,
             display_type: "issues",
             level: "fatal",
-            msg: "",
+            msg: "some message",
             error: {
               expected: "",
               got: "",
@@ -125,8 +131,29 @@ describe("Looking Glass Methods", () => {
         ],
       };
       lookingGlass.feedback = feedback;
-      const res = lookingGlass.validatePayloadSignature();
-      expect(res.value.reports[0].error.got).toStrictEqual(null);
+      const reports = lookingGlass.validatePayloadSignature();
+      expect(reports[0].error.expected).toStrictEqual(null);
+    });
+
+    it("Should set the error.got value to null if no got text is provided and a valid msg exists", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "fatal",
+            msg: "Some message",
+            error: {
+              expected: "",
+              got: "",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      const reports = lookingGlass.validatePayloadSignature();
+      expect(reports[0].error.got).toStrictEqual(null);
     });
   });
 });
