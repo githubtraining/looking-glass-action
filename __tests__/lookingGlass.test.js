@@ -235,4 +235,11 @@ describe("Looking Glass Methods", () => {
       expect(process.stdout.write).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("getReportLevel method tests", () => {
+    it("Returns the 'level' of the current report", () => {
+      const level = lookingGlass.getReportLevel(baseFeedback.reports[0]);
+      expect(level).toStrictEqual("info");
+    });
+  });
 });
