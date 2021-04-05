@@ -11,7 +11,9 @@ async function run() {
 
     const lookingGlass = new LookingGlass(feedback);
 
-    for (const report of lookingGlass.feedback.reports) {
+    const reports = lookingGlass.validatePayloadSignature();
+
+    for (const report of reports) {
       switch (report.display_type) {
         case "issues":
           lookingGlass.provideFeebackUsingIssues(report);

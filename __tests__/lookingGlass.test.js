@@ -7,7 +7,7 @@ describe("Looking Glass Methods", () => {
   });
 
   describe("validatePayloadSignature method tests", () => {
-    it("Should pass if the payload matches the signature schema", () => {
+    it("Should return an array of reports if the payload matches the signature schema", () => {
       const feedback = {
         reports: [
           {
@@ -15,7 +15,7 @@ describe("Looking Glass Methods", () => {
             isCorrect: true,
             level: "info",
             display_type: "actions",
-            msg: "the message",
+            msg: "",
             error: {
               expected: "the expected string",
               got: "the gotten string",
@@ -35,10 +35,39 @@ describe("Looking Glass Methods", () => {
         ],
       };
 
+      const validatedReports = [
+        {
+          filename: "the filename associated with the report",
+          isCorrect: true,
+          level: "info",
+          display_type: "actions",
+          msg: "Error",
+          error: {
+            expected: "the expected string",
+            got: "the gotten string",
+          },
+        },
+        {
+          filename: "noFile",
+          isCorrect: false,
+          display_type: "issues",
+          level: "fatal",
+          msg: "the message",
+          error: {
+            expected: null,
+            got: null,
+          },
+        },
+      ];
+
       lookingGlass.feedback = feedback;
       expect(() => {
         lookingGlass.validatePayloadSignature();
       }).not.toThrow();
+
+      expect(lookingGlass.validatePayloadSignature()).toStrictEqual(
+        validatedReports
+      );
     });
 
     it("Should throw an error if the payload is empty", () => {
@@ -111,6 +140,30 @@ describe("Looking Glass Methods", () => {
         lookingGlass.validatePayloadSignature();
       }).toThrowError(
         "error.expected and error.got cannot be blank if msg is 'Error'"
+      );
+    });
+
+    it("Should throw an error if the msg value is valid and error.expect or error.got text is provided", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "fatal",
+            msg: "Some valid message",
+            error: {
+              expected: "some expected",
+              got: "something got",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      expect(() => {
+        lookingGlass.validatePayloadSignature();
+      }).toThrowError(
+        "error.expected or error.got cannot be populated if msg is something other than 'Error'"
       );
     });
 
