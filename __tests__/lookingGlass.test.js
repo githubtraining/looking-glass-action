@@ -2,8 +2,24 @@ const LookingGlass = require("../lib/lookingGlass");
 
 describe("Looking Glass Methods", () => {
   let lookingGlass;
+  let baseFeedback = {
+    reports: [
+      {
+        filename: "the filename associated with the report",
+        isCorrect: true,
+        level: "info",
+        display_type: "actions",
+        msg: "",
+        error: {
+          expected: "the expected string",
+          got: "the gotten string",
+        },
+      },
+    ],
+  };
+
   beforeEach(() => {
-    lookingGlass = new LookingGlass("");
+    lookingGlass = new LookingGlass(baseFeedback);
   });
 
   describe("validatePayloadSignature method tests", () => {
@@ -207,6 +223,71 @@ describe("Looking Glass Methods", () => {
       lookingGlass.feedback = feedback;
       const reports = lookingGlass.validatePayloadSignature();
       expect(reports[0].error.got).toStrictEqual(null);
+    });
+
+    it("Should throw an error if improper level value is supplied", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "oranges",
+            msg: "",
+            error: {
+              expected: "expected value",
+              got: "got value",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      expect(() => {
+        lookingGlass.validatePayloadSignature(feedback);
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
+    });
+
+    it("Should throw an error if improper isCorrect value is supplied", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: "bread",
+            display_type: "issues",
+            level: "issues",
+            msg: "",
+            error: {
+              expected: "expected value",
+              got: "got value",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      expect(() => {
+        lookingGlass.validatePayloadSignature(feedback);
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
+    });
+  });
+
+  describe("forceWorkflowToFail method tests", () => {
+    beforeEach(() => {
+      process.stdout.write = jest.fn();
+    });
+    it("Should use process.stdout.write exactly 1 time", () => {
+      lookingGlass.forceWorkflowToFail();
+      expect(process.stdout.write).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("getReportLevel method tests", () => {
+    it("Returns the 'level' of the current report", () => {
+      const level = lookingGlass.getReportLevel(baseFeedback.reports[0]);
+      expect(level).toStrictEqual("info");
     });
   });
 });
