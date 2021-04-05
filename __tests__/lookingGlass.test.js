@@ -290,4 +290,43 @@ describe("Looking Glass Methods", () => {
       expect(level).toStrictEqual("info");
     });
   });
+
+  describe("provideFeedbackUsingIssues", () => {
+    beforeAll(() => {
+      process.env.GITHUB_REPOSITORY = "msft/fake-repo-ftw";
+      process.env.GITHUB_ACTOR = "mona";
+      process.env.GITHUB_REPOSITORY_OWNER = "msft";
+      lookingGlass.context.actor = "mona";
+    });
+    beforeEach(() => {
+      lookingGlass.octokit.issues.create = jest.fn();
+    });
+    it("Should call provideFeedbackUsingIssues 1 time", async () => {
+      lookingGlass.provideFeedbackUsingIssues = jest.fn();
+      await lookingGlass.provideFeedbackUsingIssues(
+        lookingGlass.feedback.reports[0]
+      );
+      expect(lookingGlass.provideFeedbackUsingIssues).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should provide an error message if the feedback payload contains error values", async () => {
+      const validatedReports = lookingGlass.validatePayloadSignature(
+        lookingGlass.feedback.reports
+      );
+      const { payload, res } = await lookingGlass.provideFeedbackUsingIssues(
+        validatedReports[0]
+      );
+      // console.log(payload);
+      expect(payload).toStrictEqual({
+        owner: "msft",
+        repo: "fake-repo-ftw",
+        title: "Oops, there is an error",
+        body:
+          "# mona It looks like you have an error 😦\n" +
+          "We expected: the expected string\n" +
+          "We received: the gotten string",
+        labels: ["bug"],
+      });
+    });
+  });
 });

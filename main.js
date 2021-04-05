@@ -16,7 +16,7 @@ async function run() {
     for (const report of reports) {
       switch (report.display_type) {
         case "issues":
-          lookingGlass.provideFeebackUsingIssues(report);
+          lookingGlass.provideFeedbackUsingIssues(report);
           break;
         default:
           console.log("default case");
