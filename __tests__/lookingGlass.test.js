@@ -224,6 +224,54 @@ describe("Looking Glass Methods", () => {
       const reports = lookingGlass.validatePayloadSignature();
       expect(reports[0].error.got).toStrictEqual(null);
     });
+
+    it("Should throw an error if improper level value is supplied", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: false,
+            display_type: "issues",
+            level: "oranges",
+            msg: "",
+            error: {
+              expected: "expected value",
+              got: "got value",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      expect(() => {
+        lookingGlass.validatePayloadSignature(feedback);
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
+    });
+
+    it("Should throw an error if improper isCorrect value is supplied", () => {
+      const feedback = {
+        reports: [
+          {
+            filename: "some filename",
+            isCorrect: "bread",
+            display_type: "issues",
+            level: "issues",
+            msg: "",
+            error: {
+              expected: "expected value",
+              got: "got value",
+            },
+          },
+        ],
+      };
+      lookingGlass.feedback = feedback;
+      expect(() => {
+        lookingGlass.validatePayloadSignature(feedback);
+      }).toThrowError(
+        "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type."
+      );
+    });
   });
 
   describe("forceWorkflowToFail method tests", () => {
