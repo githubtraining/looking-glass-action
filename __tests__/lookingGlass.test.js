@@ -2,8 +2,24 @@ const LookingGlass = require("../lib/lookingGlass");
 
 describe("Looking Glass Methods", () => {
   let lookingGlass;
+  let baseFeedback = {
+    reports: [
+      {
+        filename: "the filename associated with the report",
+        isCorrect: true,
+        level: "info",
+        display_type: "actions",
+        msg: "",
+        error: {
+          expected: "the expected string",
+          got: "the gotten string",
+        },
+      },
+    ],
+  };
+
   beforeEach(() => {
-    lookingGlass = new LookingGlass("");
+    lookingGlass = new LookingGlass(baseFeedback);
   });
 
   describe("validatePayloadSignature method tests", () => {
@@ -207,6 +223,16 @@ describe("Looking Glass Methods", () => {
       lookingGlass.feedback = feedback;
       const reports = lookingGlass.validatePayloadSignature();
       expect(reports[0].error.got).toStrictEqual(null);
+    });
+  });
+
+  describe("forceWorkflowToFail method tests", () => {
+    beforeEach(() => {
+      process.stdout.write = jest.fn();
+    });
+    it("Should use process.stdout.write exactly 1 time", () => {
+      lookingGlass.forceWorkflowToFail();
+      expect(process.stdout.write).toHaveBeenCalledTimes(1);
     });
   });
 });
