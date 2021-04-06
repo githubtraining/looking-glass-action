@@ -19037,31 +19037,24 @@ class LookingGlass {
 
     let issueBody = new FeedbackMessages(user, "surveyLink");
 
-    if (report.isCorrect && report.msg !== "Error") {
-      payload.title = `Step feedback for ${user}`;
-      payload.body = issueBody.success(report.msg);
+    if (report.msg !== "Error") {
+      if (report.isCorrect) {
+        payload.title = `Step feedback for ${user}`;
+        payload.body = issueBody.success(report.msg);
+      }
+      if (!report.isCorrect) {
+        payload.title = "Incorrect Solution";
+        payload.body = issueBody.failure(report.error);
+        payload.labels = ["invalid"];
+        this.forceWorkflowToFail("You're wrong!");
+      }
     }
 
     if (report.msg === "Error") {
       payload.title = "Oops, there is an error";
       payload.body = issueBody.failure(report.error);
       payload.labels = ["bug"];
-      // this.forceWorkflowToFail(
-      //   `An error occured, see the issue titled ${payload.title}`
-      // );
-    }
-
-    if (!report.isCorrect && report.msg !== "Error") {
-      console.log(
-        "isCorrect is false and the report message is something other than Error"
-      );
-      payload.title = "Incorrect Solution";
-      payload.body = issueBody.failure(report.error);
-      payload.labels = ["invalid"];
-      // this didn't get set as expected
-      // this.forceWorkflowToFail(
-      //   `Your solution is incorrect, please see the issue titled ${payload.title}`
-      // );
+      this.forceWorkflowToFail("throw a ServiceError");
     }
 
     const res = await this.octokit.issues.create(payload);
