@@ -7,8 +7,8 @@ async function run() {
     const fb = core.getInput("feedback");
     if (!fb) return;
     console.log(fb);
-    // const feedback = JSON.parse(fb);
-    // console.log(`json.parse(fb):\n${feedback} `);
+    const feedback = JSON.parse(fb);
+    console.log(`json.parse(fb):\n${feedback} `);
 
     const lookingGlass = new LookingGlass(fb);
     console.log(`new LookingGlass(feedback):\n${lookingGlass} `);
