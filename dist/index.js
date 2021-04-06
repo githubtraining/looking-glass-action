@@ -12314,20 +12314,20 @@ const LookingGlass = __webpack_require__(901);
 async function run() {
   try {
     const feedBack = core.getInput("feedback");
-    if (!fb) return;
-    console.log("you have feedback");
+    if (!feedBack) return;
+
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
-    console.log("you have a new lg");
 
     const reports = lookingGlass.validatePayloadSignature();
     console.log(reports);
 
     for (const report of reports) {
-      console.log(report);
       switch (report.display_type) {
         case "issues":
-          console.log("type is issues");
-          lookingGlass.provideFeedbackUsingIssues(report);
+          const {
+            payload,
+            res,
+          } = await lookingGlass.provideFeedbackUsingIssues(report);
           // console.log("providing feedback via issue");
           // if res failed then throw a ServiceError (not created yet)
           break;
@@ -19051,7 +19051,7 @@ class LookingGlass {
         payload.title = "Incorrect Solution";
         payload.body = issueBody.failure(report.error);
         payload.labels = ["invalid"];
-        // this.forceWorkflowToFail("You're wrong!");
+        this.forceWorkflowToFail("You're wrong!");
       }
     }
 
@@ -19059,7 +19059,7 @@ class LookingGlass {
       payload.title = "Oops, there is an error";
       payload.body = issueBody.failure(report.error);
       payload.labels = ["bug"];
-      // this.forceWorkflowToFail("throw a ServiceError");
+      this.forceWorkflowToFail("throw a ServiceError");
     }
 
     const res = await this.octokit.issues.create(payload);
