@@ -12317,10 +12317,13 @@ async function run() {
     if (!fb) return;
 
     const feedback = JSON.parse(fb);
+    console.log(`json.parse(fb):\n${feedback} `);
 
     const lookingGlass = new LookingGlass(feedback);
+    console.log(`new LookingGlass(feedback):\n${lookingGlass} `);
 
     const reports = lookingGlass.validatePayloadSignature();
+    console.log(`lookingGlass.validatepayloadsig():\n${reports} `);
 
     for (const report of reports) {
       switch (report.display_type) {
