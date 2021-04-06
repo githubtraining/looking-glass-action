@@ -12321,6 +12321,7 @@ async function run() {
     const reports = lookingGlass.validatePayloadSignature();
 
     for (const report of reports) {
+      console.log(report);
       switch (report.display_type) {
         case "issues":
           console.log("type is issues");
@@ -19104,7 +19105,7 @@ class LookingGlass {
         report.error.expected = null;
       }
 
-      if (report.msg !== "Error" && report.error.got) {
+      if (report.msg !== "Error" && !report.error.got) {
         report.error.got = null;
       }
     }

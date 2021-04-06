@@ -12,6 +12,7 @@ async function run() {
     const reports = lookingGlass.validatePayloadSignature();
 
     for (const report of reports) {
+      console.log(report);
       switch (report.display_type) {
         case "issues":
           console.log("type is issues");
