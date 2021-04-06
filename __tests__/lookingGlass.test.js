@@ -159,30 +159,6 @@ describe("Looking Glass Methods", () => {
       );
     });
 
-    it("Should throw an error if the msg value is valid and error.expect or error.got text is provided", () => {
-      const feedback = {
-        reports: [
-          {
-            filename: "some filename",
-            isCorrect: false,
-            display_type: "issues",
-            level: "fatal",
-            msg: "Some valid message",
-            error: {
-              expected: "some expected",
-              got: "something got",
-            },
-          },
-        ],
-      };
-      lookingGlass.feedback = feedback;
-      expect(() => {
-        lookingGlass.validatePayloadSignature();
-      }).toThrowError(
-        "error.expected or error.got cannot be populated if msg is something other than 'Error'"
-      );
-    });
-
     it("Should set the error.expected value to null if no expected text is provided and a valid msg exists", () => {
       const feedback = {
         reports: [
@@ -323,8 +299,8 @@ describe("Looking Glass Methods", () => {
         title: "Oops, there is an error",
         body:
           "# mona It looks like you have an error 😦\n" +
-          "We expected: the expected string\n" +
-          "We received: the gotten string",
+          "**We expected:**\n the expected string\n" +
+          "**We received:**\n the gotten string",
         labels: ["bug"],
       });
     });

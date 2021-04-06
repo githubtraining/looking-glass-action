@@ -4,17 +4,12 @@ const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
   try {
-    const fb = core.getInput("feedback");
+    const feedBack = core.getInput("feedback");
     if (!fb) return;
-    console.log(fb);
-    const feedback = JSON.parse(fb);
-    console.log(`json.parse(fb):\n${feedback} `);
 
-    const lookingGlass = new LookingGlass(feedback);
-    console.log(`new LookingGlass(fb):\n${lookingGlass.feedback} `);
+    const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
-    console.log(`lookingGlass.validatepayloadsig():\n${reports} `);
 
     for (const report of reports) {
       switch (report.display_type) {

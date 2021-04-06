@@ -12313,17 +12313,12 @@ const LookingGlass = __webpack_require__(901);
 
 async function run() {
   try {
-    const fb = core.getInput("feedback");
+    const feedBack = core.getInput("feedback");
     if (!fb) return;
-    console.log(fb);
-    const feedback = JSON.parse(fb);
-    console.log(`json.parse(fb):\n${feedback} `);
 
-    const lookingGlass = new LookingGlass(feedback);
-    console.log(`new LookingGlass(fb):\n${lookingGlass.feedback} `);
+    const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
-    console.log(`lookingGlass.validatepayloadsig():\n${reports} `);
 
     for (const report of reports) {
       switch (report.display_type) {
@@ -17130,7 +17125,7 @@ class FeedbackMessages {
   }
 
   failure(err) {
-    return `# ${this.user} It looks like you have an error 😦\nWe expected: ${err.expected}\nWe received: ${err.got}`;
+    return `# ${this.user} It looks like you have an error 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}`;
   }
 }
 
@@ -19040,7 +19035,7 @@ class LookingGlass {
 
     let issueBody = new FeedbackMessages(user, "surveyLink");
 
-    if (report.msg !== "Error") {
+    if (report.isCorrect && report.msg !== "Error") {
       payload.title = `Step feedback for ${user}`;
       payload.body = issueBody.success(report.msg);
     }
@@ -19049,6 +19044,18 @@ class LookingGlass {
       payload.title = "Oops, there is an error";
       payload.body = issueBody.failure(report.error);
       payload.labels = ["bug"];
+      this.forceWorkflowToFail(
+        `An error occured, see the issue titled ${payload.title}`
+      );
+    }
+
+    if (!report.isCorrect && report.msg !== "Error") {
+      payload.title = "Incorrect Solution";
+      payload.body = issueBody.failure(report.error);
+      payload.labels = ["invalid"];
+      this.forceWorkflowToFail(
+        `Your solution is incorrect, please see the issue titled ${payload.title}`
+      );
     }
 
     const res = await this.octokit.issues.create(payload);
@@ -19056,8 +19063,8 @@ class LookingGlass {
     return { payload, res };
   }
 
-  forceWorkflowToFail() {
-    core.setFailed("Should reflect failure");
+  forceWorkflowToFail(msg) {
+    core.setFailed(msg);
   }
 
   getReportLevel(report) {
@@ -19084,14 +19091,14 @@ class LookingGlass {
         );
       }
 
-      if (
-        report.msg !== "Error" &&
-        (report.error.got || report.error.expected)
-      ) {
-        throw new ValueError(
-          "error.expected or error.got cannot be populated if msg is something other than 'Error'"
-        );
-      }
+      // if (
+      //   report.msg !== "Error" &&
+      //   (report.error.got || report.error.expected)
+      // ) {
+      //   throw new ValueError(
+      //     "error.expected or error.got cannot be populated if msg is something other than 'Error'"
+      //   );
+      // }
 
       if (report.msg !== "Error" && !report.error.expected) {
         report.error.expected = null;
