@@ -292,7 +292,7 @@ describe("Looking Glass Methods", () => {
       const { payload, res } = await lookingGlass.provideFeedbackUsingIssues(
         validatedReports[0]
       );
-      // console.log(payload);
+
       expect(payload).toStrictEqual({
         owner: "msft",
         repo: "fake-repo-ftw",
