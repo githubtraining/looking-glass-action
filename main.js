@@ -10,7 +10,6 @@ async function run() {
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
-    console.log(reports);
 
     for (const report of reports) {
       switch (report.display_type) {
@@ -23,6 +22,7 @@ async function run() {
           // if res failed then throw a ServiceError (not created yet)
           break;
         default:
+          // throw DisplayTypeError
           console.log("default case");
           break;
       }

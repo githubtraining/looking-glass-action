@@ -12319,7 +12319,6 @@ async function run() {
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
-    console.log(reports);
 
     for (const report of reports) {
       switch (report.display_type) {
@@ -12332,6 +12331,7 @@ async function run() {
           // if res failed then throw a ServiceError (not created yet)
           break;
         default:
+          // throw DisplayTypeError
           console.log("default case");
           break;
       }
@@ -16809,7 +16809,16 @@ class SchemaError extends CustomError {
   }
 }
 
-module.exports = { ValueError, SchemaError };
+class ServiceError extends CustomError {
+  constructor() {
+    super();
+    this.message =
+      "There was a problem with the GitHub service or resource this action is attempting to use.";
+    this.name = "ServiceError";
+  }
+}
+
+module.exports = { ValueError, SchemaError, ServiceError };
 
 
 /***/ }),
@@ -17126,7 +17135,12 @@ class FeedbackMessages {
     this.user = user;
     this.surveyLink = surveyLink;
   }
+}
 
+class IssueFeedback extends FeedbackMessages {
+  constructor(user, surveyLink) {
+    super(user, surveyLink);
+  }
   success(msg) {
     return `# Step feedback for ${this.user}\n${msg}** task!\n\n_please [provide feedback](${this.surveyLink}) for this lab_`;
   }
@@ -17134,9 +17148,13 @@ class FeedbackMessages {
   failure(err) {
     return `# ${this.user} It looks like you have an error 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}`;
   }
+
+  error(err, payload) {
+    return `# ${err.name}\n${err.userMessage}\n**payload details:**\n\`\`\`${payload.err}\`\`\``;
+  }
 }
 
-module.exports = { FeedbackMessages };
+module.exports = { IssueFeedback };
 
 
 /***/ }),
@@ -19021,8 +19039,8 @@ const core = __webpack_require__(357);
 const github = __webpack_require__(955);
 const schema = __webpack_require__(629);
 
-const { ValueError, SchemaError } = __webpack_require__(778);
-const { FeedbackMessages } = __webpack_require__(824);
+const { ValueError, SchemaError, ServicError } = __webpack_require__(778);
+const { IssueFeedback } = __webpack_require__(824);
 
 // const token = core.getInput("github-token");
 class LookingGlass {
@@ -19040,7 +19058,7 @@ class LookingGlass {
       repo: this.context.repo.repo,
     };
 
-    let issueBody = new FeedbackMessages(user, "surveyLink");
+    let issueBody = new IssueFeedback(user, "surveyLink");
 
     if (report.msg !== "Error") {
       if (report.isCorrect) {
@@ -19051,15 +19069,19 @@ class LookingGlass {
         payload.title = "Incorrect Solution";
         payload.body = issueBody.failure(report.error);
         payload.labels = ["invalid"];
-        this.forceWorkflowToFail("You're wrong!");
+        this.forceWorkflowToFail(
+          `Your solution is incorrect, check for an issue titled "${payload.title}" for more information`
+        );
       }
     }
 
     if (report.msg === "Error") {
+      const serviceError = new ServicError();
       payload.title = "Oops, there is an error";
-      payload.body = issueBody.failure(report.error);
+      payload.body = issueBody.error(serviceError, report);
       payload.labels = ["bug"];
-      this.forceWorkflowToFail("throw a ServiceError");
+
+      this.forceWorkflowToFail(serviceError.message);
     }
 
     const res = await this.octokit.issues.create(payload);

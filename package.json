@@ -4,7 +4,8 @@
   "description": "provides feedback to learners based on the outcome of their validation lab grader workflow",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "ncc build main.js"
   },
   "repository": {
     "type": "git",
