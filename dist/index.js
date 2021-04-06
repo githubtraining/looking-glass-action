@@ -12320,7 +12320,7 @@ async function run() {
     // console.log(`json.parse(fb):\n${feedback} `);
 
     const lookingGlass = new LookingGlass(fb);
-    console.log(`new LookingGlass(fb):\n${lookingGlass.feedback.reports} `);
+    console.log(`new LookingGlass(fb):\n${lookingGlass.feedback} `);
 
     const reports = lookingGlass.validatePayloadSignature();
     console.log(`lookingGlass.validatepayloadsig():\n${reports} `);
