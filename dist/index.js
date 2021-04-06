@@ -12323,7 +12323,10 @@ async function run() {
     for (const report of reports) {
       switch (report.display_type) {
         case "issues":
-          lookingGlass.provideFeedbackUsingIssues(report);
+          const { payload, res } = lookingGlass.provideFeedbackUsingIssues(
+            report
+          );
+          // if res failed then throw a ServiceError (not created yet)
           break;
         default:
           console.log("default case");
@@ -19050,9 +19053,13 @@ class LookingGlass {
     }
 
     if (!report.isCorrect && report.msg !== "Error") {
+      console.log(
+        "isCorrect is false and the report message is something other than Error"
+      );
       payload.title = "Incorrect Solution";
       payload.body = issueBody.failure(report.error);
       payload.labels = ["invalid"];
+      // this didn't get set as expected
       this.forceWorkflowToFail(
         `Your solution is incorrect, please see the issue titled ${payload.title}`
       );
