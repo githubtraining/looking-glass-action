@@ -12323,8 +12323,9 @@ async function run() {
     for (const report of reports) {
       switch (report.display_type) {
         case "issues":
-          await lookingGlass.provideFeedbackUsingIssues(report);
-          console.log("providing feedback via issue");
+          console.log("type is issues");
+          lookingGlass.provideFeedbackUsingIssues(report);
+          // console.log("providing feedback via issue");
           // if res failed then throw a ServiceError (not created yet)
           break;
         default:
