@@ -12315,10 +12315,12 @@ async function run() {
   try {
     const feedBack = core.getInput("feedback");
     if (!fb) return;
-
+    console.log("you have feedback");
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
+    console.log("you have a new lg");
 
     const reports = lookingGlass.validatePayloadSignature();
+    console.log(reports);
 
     for (const report of reports) {
       console.log(report);
