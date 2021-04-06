@@ -12343,6 +12343,7 @@ async function run() {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
+    console.log(error);
   }
 }
 
