@@ -17146,7 +17146,7 @@ class IssueFeedback extends FeedbackMessages {
   }
 
   failure(err) {
-    return `# ${this.user} It looks like you have an error 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}`;
+    return `# ${this.user} It looks like you performed an action we didn't expect. 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}. Try performing the expected action.`;
   }
 
   error(err, payload) {
