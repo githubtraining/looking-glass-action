@@ -12313,25 +12313,37 @@ const LookingGlass = __webpack_require__(901);
 
 async function run() {
   try {
-    const fb = core.getInput("feedback");
-    if (!fb) return;
+    const feedBack = core.getInput("feedback");
+    if (!feedBack) return;
 
-    const feedback = JSON.parse(fb);
+    const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
-    const lookingGlass = new LookingGlass(feedback);
+    const reports = lookingGlass.validatePayloadSignature();
 
-    for (const report of lookingGlass.feedback.reports) {
+    for (const report of reports) {
       switch (report.display_type) {
         case "issues":
-          lookingGlass.provideFeebackUsingIssues(report);
+          const {
+            payload,
+            res,
+          } = await lookingGlass.provideFeedbackUsingIssues(report);
+          // console.log("providing feedback via issue");
+          // if res failed then throw a ServiceError (not created yet)
           break;
         default:
+          // throw DisplayTypeError
           console.log("default case");
           break;
       }
     }
   } catch (error) {
-    core.setFailed(error);
+    // use actions to throw author errors in actions.debug
+    // log to learner with core.log that error happened and isn't on them
+    if (error.name === "SchemaError" || error.name === "ValueError") {
+      core.debug(JSON.stringify(error));
+      core.setFailed(error.userMessage);
+    }
+    console.log(error);
   }
 }
 
@@ -14567,10 +14579,10 @@ const schema = Joi.object({
           "pages",
           "projects"
         ),
-        msg: Joi.string().allow("", null).empty("", null).default(""),
+        msg: Joi.string().allow("", null).empty("", null).default("Error"),
         error: Joi.object({
-          expected: Joi.string().allow("").empty("").default(""),
-          got: Joi.string().allow("").empty("").default(""),
+          expected: Joi.string().allow("", null).empty("", null).default(null),
+          got: Joi.string().allow("", null).empty("", null).default(null),
         }),
       })
     )
@@ -16772,6 +16784,45 @@ exports.paginateRest = paginateRest;
 
 /***/ }),
 
+/***/ 778:
+/***/ (function(module) {
+
+class CustomError extends Error {
+  constructor(message) {
+    super(message);
+    this.userMessage =
+      "Oops, looks like something isn't working right.  This is most likely not your fault!  Please open an issue in this lab's template repository!";
+  }
+}
+class ValueError extends CustomError {
+  constructor(message) {
+    super(message);
+    this.name = "ValueError";
+  }
+}
+class SchemaError extends CustomError {
+  constructor() {
+    super();
+    this.message =
+      "Feedback Payload failed to validate against desired schema.  Make sure all required fields are present and all values are of the proper data type.";
+    this.name = "SchemaError";
+  }
+}
+
+class ServiceError extends CustomError {
+  constructor() {
+    super();
+    this.message =
+      "There was a problem with the GitHub service or resource this action is attempting to use.";
+    this.name = "ServiceError";
+  }
+}
+
+module.exports = { ValueError, SchemaError, ServiceError };
+
+
+/***/ }),
+
 /***/ 779:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -17072,6 +17123,40 @@ function wrappy (fn, cb) {
     return ret
   }
 }
+
+
+/***/ }),
+
+/***/ 824:
+/***/ (function(module) {
+
+class FeedbackMessages {
+  constructor(user, surveyLink) {
+    this.user = user;
+    this.surveyLink = surveyLink;
+  }
+}
+
+class IssueFeedback extends FeedbackMessages {
+  constructor(user, surveyLink) {
+    super(user, surveyLink);
+  }
+  success(msg) {
+    return `# Step feedback for ${this.user}\n${msg}** task!\n\n_please [provide feedback](${this.surveyLink}) for this lab_`;
+  }
+
+  failure(err) {
+    return `# ${this.user} It looks like you performed an action we didn't expect. 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}. Try performing the expected action.`;
+  }
+
+  error(err, payload) {
+    return `# ${err.name}\n${
+      err.userMessage
+    }\n**payload details:**\n\`\`\`${JSON.stringify(payload.error)}\`\`\``;
+  }
+}
+
+module.exports = { IssueFeedback };
 
 
 /***/ }),
@@ -18956,27 +19041,58 @@ const core = __webpack_require__(357);
 const github = __webpack_require__(955);
 const schema = __webpack_require__(629);
 
-const token = core.getInput("github-token") || "none";
+const { ValueError, SchemaError, ServiceError } = __webpack_require__(778);
+const { IssueFeedback } = __webpack_require__(824);
+
+// const token = core.getInput("github-token");
 class LookingGlass {
   constructor(feedback) {
-    this.octokit = github.getOctokit(token) || {};
+    this.token = core.getInput("github-token") || "none";
+    this.octokit = github.getOctokit(this.token) || {};
     this.context = github.context || {};
-    this.feedback = feedback || {};
+    this.feedback = feedback;
   }
 
-  async provideFeebackUsingIssues(report) {
-    const msg = report.msg !== "Error" ? report.msg : report.error;
-    const res = await this.octokit.issues.create({
+  async provideFeedbackUsingIssues(report) {
+    let user = this.context.actor;
+    let payload = {
       owner: this.context.repo.owner,
       repo: this.context.repo.repo,
-      title: "Oh no!",
-      labels: ["bug"],
-      body: `${msg}`,
-    });
+    };
+
+    let issueBody = new IssueFeedback(user, "surveyLink");
+
+    if (report.msg !== "Error") {
+      if (report.isCorrect) {
+        payload.title = `Step feedback for ${user}`;
+        payload.body = issueBody.success(report.msg);
+      }
+      if (!report.isCorrect) {
+        payload.title = "Incorrect Solution";
+        payload.body = issueBody.failure(report.error);
+        payload.labels = ["invalid"];
+        this.forceWorkflowToFail(
+          `Your solution is incorrect, check for an issue titled "${payload.title}" for more information`
+        );
+      }
+    }
+
+    if (report.msg === "Error") {
+      const serviceError = new ServiceError();
+      payload.title = "Oops, there is an error";
+      payload.body = issueBody.error(serviceError, report);
+      payload.labels = ["bug"];
+
+      this.forceWorkflowToFail(serviceError.message);
+    }
+
+    const res = await this.octokit.issues.create(payload);
+
+    return { payload, res };
   }
 
-  forceWorkflowToFail() {
-    core.setFailed("Should reflect failure");
+  forceWorkflowToFail(msg) {
+    core.setFailed(msg);
   }
 
   getReportLevel(report) {
@@ -18985,7 +19101,34 @@ class LookingGlass {
 
   validatePayloadSignature() {
     const { error, value } = schema.validate(this.feedback);
-    return { error, value };
+    if (error) {
+      throw new SchemaError();
+    }
+
+    for (const report of value.reports) {
+      if (!report.msg) {
+        report.msg = "Error";
+      }
+
+      if (
+        report.msg === "Error" &&
+        (!report.error.expected || !report.error.got)
+      ) {
+        throw new ValueError(
+          "error.expected and error.got cannot be blank if msg is 'Error'"
+        );
+      }
+
+      if (report.msg !== "Error" && !report.error.expected) {
+        report.error.expected = null;
+      }
+
+      if (report.msg !== "Error" && !report.error.got) {
+        report.error.got = null;
+      }
+    }
+
+    return value.reports;
   }
 }
 module.exports = LookingGlass;

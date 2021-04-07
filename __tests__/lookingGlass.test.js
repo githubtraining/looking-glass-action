@@ -159,30 +159,6 @@ describe("Looking Glass Methods", () => {
       );
     });
 
-    it("Should throw an error if the msg value is valid and error.expect or error.got text is provided", () => {
-      const feedback = {
-        reports: [
-          {
-            filename: "some filename",
-            isCorrect: false,
-            display_type: "issues",
-            level: "fatal",
-            msg: "Some valid message",
-            error: {
-              expected: "some expected",
-              got: "something got",
-            },
-          },
-        ],
-      };
-      lookingGlass.feedback = feedback;
-      expect(() => {
-        lookingGlass.validatePayloadSignature();
-      }).toThrowError(
-        "error.expected or error.got cannot be populated if msg is something other than 'Error'"
-      );
-    });
-
     it("Should set the error.expected value to null if no expected text is provided and a valid msg exists", () => {
       const feedback = {
         reports: [
@@ -288,6 +264,44 @@ describe("Looking Glass Methods", () => {
     it("Returns the 'level' of the current report", () => {
       const level = lookingGlass.getReportLevel(baseFeedback.reports[0]);
       expect(level).toStrictEqual("info");
+    });
+  });
+
+  describe("provideFeedbackUsingIssues", () => {
+    beforeAll(() => {
+      process.env.GITHUB_REPOSITORY = "msft/fake-repo-ftw";
+      process.env.GITHUB_ACTOR = "mona";
+      process.env.GITHUB_REPOSITORY_OWNER = "msft";
+      lookingGlass.context.actor = "mona";
+    });
+    beforeEach(() => {
+      lookingGlass.octokit.issues.create = jest.fn();
+    });
+    it("Should call provideFeedbackUsingIssues 1 time", async () => {
+      lookingGlass.provideFeedbackUsingIssues = jest.fn();
+      await lookingGlass.provideFeedbackUsingIssues(
+        lookingGlass.feedback.reports[0]
+      );
+      expect(lookingGlass.provideFeedbackUsingIssues).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should provide an error message if the feedback payload contains error values", async () => {
+      const validatedReports = lookingGlass.validatePayloadSignature(
+        lookingGlass.feedback.reports
+      );
+      console.log(validatedReports[0]);
+      const { payload, res } = await lookingGlass.provideFeedbackUsingIssues(
+        validatedReports[0]
+      );
+
+      expect(payload).toStrictEqual({
+        owner: "msft",
+        repo: "fake-repo-ftw",
+        title: "Oops, there is an error",
+        body:
+          '# ServiceError\nOops, looks like something isn\'t working right.  This is most likely not your fault!  Please open an issue in this lab\'s template repository!\n**payload details:**\n```{"expected":"the expected string","got":"the gotten string"}```',
+        labels: ["bug"],
+      });
     });
   });
 });

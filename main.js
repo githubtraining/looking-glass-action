@@ -4,21 +4,25 @@ const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
   try {
-    const fb = core.getInput("feedback");
-    if (!fb) return;
+    const feedBack = core.getInput("feedback");
+    if (!feedBack) return;
 
-    const feedback = JSON.parse(fb);
-
-    const lookingGlass = new LookingGlass(feedback);
+    const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
 
     for (const report of reports) {
       switch (report.display_type) {
         case "issues":
-          lookingGlass.provideFeebackUsingIssues(report);
+          const {
+            payload,
+            res,
+          } = await lookingGlass.provideFeedbackUsingIssues(report);
+          // console.log("providing feedback via issue");
+          // if res failed then throw a ServiceError (not created yet)
           break;
         default:
+          // throw DisplayTypeError
           console.log("default case");
           break;
       }
@@ -30,6 +34,7 @@ async function run() {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
+    console.log(error);
   }
 }
 
