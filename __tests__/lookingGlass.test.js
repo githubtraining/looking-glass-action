@@ -289,6 +289,7 @@ describe("Looking Glass Methods", () => {
       const validatedReports = lookingGlass.validatePayloadSignature(
         lookingGlass.feedback.reports
       );
+      console.log(validatedReports[0]);
       const { payload, res } = await lookingGlass.provideFeedbackUsingIssues(
         validatedReports[0]
       );
@@ -298,9 +299,7 @@ describe("Looking Glass Methods", () => {
         repo: "fake-repo-ftw",
         title: "Oops, there is an error",
         body:
-          "# mona It looks like you have an error 😦\n" +
-          "**We expected:**\n the expected string\n" +
-          "**We received:**\n the gotten string",
+          '# ServiceError\nOops, looks like something isn\'t working right.  This is most likely not your fault!  Please open an issue in this lab\'s template repository!\n**payload details:**\n```{"expected":"the expected string","got":"the gotten string"}```',
         labels: ["bug"],
       });
     });

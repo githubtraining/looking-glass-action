@@ -17150,7 +17150,9 @@ class IssueFeedback extends FeedbackMessages {
   }
 
   error(err, payload) {
-    return `# ${err.name}\n${err.userMessage}\n**payload details:**\n\`\`\`${payload.err}\`\`\``;
+    return `# ${err.name}\n${
+      err.userMessage
+    }\n**payload details:**\n\`\`\`${JSON.stringify(payload.error)}\`\`\``;
   }
 }
 
@@ -19039,7 +19041,7 @@ const core = __webpack_require__(357);
 const github = __webpack_require__(955);
 const schema = __webpack_require__(629);
 
-const { ValueError, SchemaError, ServicError } = __webpack_require__(778);
+const { ValueError, SchemaError, ServiceError } = __webpack_require__(778);
 const { IssueFeedback } = __webpack_require__(824);
 
 // const token = core.getInput("github-token");
@@ -19076,7 +19078,7 @@ class LookingGlass {
     }
 
     if (report.msg === "Error") {
-      const serviceError = new ServicError();
+      const serviceError = new ServiceError();
       payload.title = "Oops, there is an error";
       payload.body = issueBody.error(serviceError, report);
       payload.labels = ["bug"];
