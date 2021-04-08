@@ -12327,7 +12327,7 @@ async function run() {
             payload,
             res,
           } = await lookingGlass.provideFeedbackUsingIssues(report);
-          // console.log("providing feedback via issue");
+          console.log(res);
           // if res failed then throw a ServiceError (not created yet)
           break;
         default:
