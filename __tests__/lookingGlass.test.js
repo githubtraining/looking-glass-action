@@ -1,4 +1,5 @@
 const LookingGlass = require("../lib/lookingGlass");
+const core = require("@actions/core");
 
 describe("Looking Glass Methods", () => {
   let lookingGlass;
@@ -289,7 +290,6 @@ describe("Looking Glass Methods", () => {
       const validatedReports = lookingGlass.validatePayloadSignature(
         lookingGlass.feedback.reports
       );
-      console.log(validatedReports[0]);
       const { payload, res } = await lookingGlass.provideFeedbackUsingIssues(
         validatedReports[0]
       );
@@ -302,6 +302,27 @@ describe("Looking Glass Methods", () => {
           '# ServiceError\nOops, looks like something isn\'t working right.  This is most likely not your fault!  Please open an issue in this lab\'s template repository!\n**payload details:**\n```{"expected":"the expected string","got":"the gotten string"}```',
         labels: ["bug"],
       });
+    });
+  });
+
+  describe("provideFeedbackUsingActions", () => {
+    it("Should call provideFeedbackUsingAction 1 time", () => {
+      lookingGlass.provideFeedbackUsingActions = jest.fn();
+      lookingGlass.provideFeedbackUsingActions(
+        lookingGlass.feedback.reports[0]
+      );
+      expect(lookingGlass.provideFeedbackUsingActions).toHaveBeenCalledTimes(1);
+    });
+    it("Should force wofklow to fail and set the serviceError.userMessage as the parameter to forceWorkflowToFail when there is an non course related error", () => {
+      const consoleSpy = jest.spyOn(lookingGlass, "forceWorkflowToFail");
+      const validatedReports = lookingGlass.validatePayloadSignature(
+        lookingGlass.feedback.reports
+      );
+      lookingGlass.provideFeedbackUsingActions(validatedReports[0]);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Oops, looks like something isn't working right.  This is most likely not your fault!  Please open an issue in this lab's template repository!"
+      );
     });
   });
 });

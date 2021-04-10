@@ -24,8 +24,14 @@ async function run() {
           if (res.status !== 201) {
             throw new ServiceError(res);
           }
-          // if res failed then throw a ServiceError (not created yet)
+
           break;
+        case "actions":
+          const err = lookingGlass.provideFeedbackUsingActions(report);
+          if (err !== undefined) {
+            throw new ServiceError(report.error);
+          }
+
         default:
           // throw DisplayTypeError
           console.log("default case");

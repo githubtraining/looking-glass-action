@@ -12309,6 +12309,7 @@ module.exports = function (string) {
 
 const core = __webpack_require__(357);
 const github = __webpack_require__(955);
+const { ServiceError } = __webpack_require__(778);
 const LookingGlass = __webpack_require__(901);
 
 async function run() {
@@ -12328,8 +12329,18 @@ async function run() {
             res,
           } = await lookingGlass.provideFeedbackUsingIssues(report);
           console.log(res);
-          // if res failed then throw a ServiceError (not created yet)
+
+          if (res.status !== 201) {
+            throw new ServiceError(res);
+          }
+
           break;
+        case "actions":
+          const err = lookingGlass.provideFeedbackUsingActions(report);
+          if (err !== undefined) {
+            throw new ServiceError(report.error);
+          }
+
         default:
           // throw DisplayTypeError
           console.log("default case");
@@ -12339,10 +12350,15 @@ async function run() {
   } catch (error) {
     // use actions to throw author errors in actions.debug
     // log to learner with core.log that error happened and isn't on them
-    if (error.name === "SchemaError" || error.name === "ValueError") {
+    if (
+      error.name === "SchemaError" ||
+      error.name === "ValueError" ||
+      error.name === "ServiceError"
+    ) {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
+
     console.log(error);
   }
 }
@@ -16810,11 +16826,12 @@ class SchemaError extends CustomError {
 }
 
 class ServiceError extends CustomError {
-  constructor() {
+  constructor(payload) {
     super();
     this.message =
       "There was a problem with the GitHub service or resource this action is attempting to use.";
     this.name = "ServiceError";
+    this.payload = payload;
   }
 }
 
@@ -17131,32 +17148,51 @@ function wrappy (fn, cb) {
 /***/ (function(module) {
 
 class FeedbackMessages {
-  constructor(user, surveyLink) {
+  constructor(user) {
     this.user = user;
-    this.surveyLink = surveyLink;
   }
 }
 
 class IssueFeedback extends FeedbackMessages {
-  constructor(user, surveyLink) {
-    super(user, surveyLink);
+  constructor(user) {
+    super(user);
   }
   success(msg) {
-    return `# Step feedback for ${this.user}\n${msg}** task!\n\n_please [provide feedback](${this.surveyLink}) for this lab_`;
+    return `# Feedback for ${this.user}\n${msg}\n\nThanks for completing the lab!`;
   }
 
   failure(err) {
     return `# ${this.user} It looks like you performed an action we didn't expect. 😦\n**We expected:**\n ${err.expected}\n**We received:**\n ${err.got}. Try performing the expected action.`;
   }
 
-  error(err, payload) {
+  error(err) {
     return `# ${err.name}\n${
       err.userMessage
-    }\n**payload details:**\n\`\`\`${JSON.stringify(payload.error)}\`\`\``;
+    }\n**payload details:**\n\`\`\`${JSON.stringify(err.payload)}\`\`\``;
   }
 }
 
-module.exports = { IssueFeedback };
+class ActionsFeedback extends FeedbackMessages {
+  constructor(user) {
+    super(user);
+  }
+  success(msg) {
+    return `Feedback for ${this.user}\n${msg}\n\nThanks for completing the lab!`;
+  }
+
+  failure(err) {
+    return `${this.user} It looks like you performed an action we didn't expect. 😦\nWe expected:\n ${err.expected}\nWe received:\n ${err.got}. Try performing the expected action.`;
+  }
+
+  error(err) {
+    return {
+      name: err.name,
+      userMessage: err.userMessage,
+      payload: err.payload,
+    };
+  }
+}
+module.exports = { IssueFeedback, ActionsFeedback };
 
 
 /***/ }),
@@ -19042,7 +19078,7 @@ const github = __webpack_require__(955);
 const schema = __webpack_require__(629);
 
 const { ValueError, SchemaError, ServiceError } = __webpack_require__(778);
-const { IssueFeedback } = __webpack_require__(824);
+const { IssueFeedback, ActionsFeedback } = __webpack_require__(824);
 
 // const token = core.getInput("github-token");
 class LookingGlass {
@@ -19060,7 +19096,7 @@ class LookingGlass {
       repo: this.context.repo.repo,
     };
 
-    let issueBody = new IssueFeedback(user, "surveyLink");
+    let issueBody = new IssueFeedback(user);
 
     if (report.msg !== "Error") {
       if (report.isCorrect) {
@@ -19078,7 +19114,7 @@ class LookingGlass {
     }
 
     if (report.msg === "Error") {
-      const serviceError = new ServiceError();
+      const serviceError = new ServiceError(report.error);
       payload.title = "Oops, there is an error";
       payload.body = issueBody.error(serviceError, report);
       payload.labels = ["bug"];
@@ -19089,6 +19125,34 @@ class LookingGlass {
     const res = await this.octokit.issues.create(payload);
 
     return { payload, res };
+  }
+
+  provideFeedbackUsingActions(report) {
+    let error;
+    // let returnedWithoutError;
+    let user = this.context.actor;
+
+    let actionsFeedback = new ActionsFeedback(user);
+
+    if (report.msg !== "Error") {
+      if (report.isCorrect) {
+        core.info(actionsFeedback.success(report.msg));
+      }
+      if (!report.isCorrect) {
+        core.info(actionsFeedback.failure(report.error));
+        this.forceWorkflowToFail(
+          `Your solution is incorrect, check for an issue titled "${payload.title}" for more information`
+        );
+      }
+    }
+
+    if (report.msg === "Error") {
+      const serviceError = new ServiceError(report.error);
+
+      this.forceWorkflowToFail(serviceError.userMessage);
+      error = serviceError;
+    }
+    return error;
   }
 
   forceWorkflowToFail(msg) {
