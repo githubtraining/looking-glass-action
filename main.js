@@ -1,16 +1,26 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
-const { ServiceError } = require("./lib/customErrors");
+
+const { ServiceError, DisplayTypeError } = require("./lib/customErrors");
 const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
   try {
     const feedBack = core.getInput("feedback");
-    if (!feedBack) return;
+    if (!feedBack) {
+      core.setFailed(
+        "No feedback payload was provided by a previous action, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
+    }
 
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
+
+    if (reports.length < 1) {
+      core.setFailed(
+        "No reports were found in the feedback payload, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
+    }
 
     for (const report of reports) {
       switch (report.display_type) {
@@ -31,11 +41,9 @@ async function run() {
           if (err !== undefined) {
             throw new ServiceError(report.error);
           }
-
-        default:
-          // throw DisplayTypeError
-          console.log("default case");
           break;
+        default:
+          throw new DisplayTypeError();
       }
     }
   } catch (error) {
@@ -44,13 +52,14 @@ async function run() {
     if (
       error.name === "SchemaError" ||
       error.name === "ValueError" ||
-      error.name === "ServiceError"
+      error.name === "ServiceError" ||
+      error.name === "DisplayTypeError"
     ) {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
 
-    console.log(error);
+    core.setFailed(error);
   }
 }
 
