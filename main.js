@@ -1,5 +1,6 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
+const { ServiceError } = require("./lib/customErrors");
 const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
@@ -18,9 +19,19 @@ async function run() {
             payload,
             res,
           } = await lookingGlass.provideFeedbackUsingIssues(report);
-          // console.log("providing feedback via issue");
-          // if res failed then throw a ServiceError (not created yet)
+          console.log(res);
+
+          if (res.status !== 201) {
+            throw new ServiceError(res);
+          }
+
           break;
+        case "actions":
+          const err = lookingGlass.provideFeedbackUsingActions(report);
+          if (err !== undefined) {
+            throw new ServiceError(report.error);
+          }
+
         default:
           // throw DisplayTypeError
           console.log("default case");
@@ -30,10 +41,15 @@ async function run() {
   } catch (error) {
     // use actions to throw author errors in actions.debug
     // log to learner with core.log that error happened and isn't on them
-    if (error.name === "SchemaError" || error.name === "ValueError") {
+    if (
+      error.name === "SchemaError" ||
+      error.name === "ValueError" ||
+      error.name === "ServiceError"
+    ) {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
+
     console.log(error);
   }
 }
