@@ -12308,18 +12308,28 @@ module.exports = function (string) {
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const core = __webpack_require__(357);
-const github = __webpack_require__(955);
-const { ServiceError } = __webpack_require__(778);
+
+const { ServiceError, DisplayTypeError } = __webpack_require__(778);
 const LookingGlass = __webpack_require__(901);
 
 async function run() {
   try {
     const feedBack = core.getInput("feedback");
-    if (!feedBack) return;
+    if (!feedBack) {
+      core.setFailed(
+        "No feedback payload was provided by a previous action, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
+    }
 
     const lookingGlass = new LookingGlass(JSON.parse(feedBack));
 
     const reports = lookingGlass.validatePayloadSignature();
+
+    if (reports.length < 1) {
+      core.setFailed(
+        "No reports were found in the feedback payload, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
+    }
 
     for (const report of reports) {
       switch (report.display_type) {
@@ -12340,11 +12350,9 @@ async function run() {
           if (err !== undefined) {
             throw new ServiceError(report.error);
           }
-
-        default:
-          // throw DisplayTypeError
-          console.log("default case");
           break;
+        default:
+          throw new DisplayTypeError();
       }
     }
   } catch (error) {
@@ -12353,13 +12361,14 @@ async function run() {
     if (
       error.name === "SchemaError" ||
       error.name === "ValueError" ||
-      error.name === "ServiceError"
+      error.name === "ServiceError" ||
+      error.name === "DisplayTypeError"
     ) {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
     }
 
-    console.log(error);
+    core.setFailed(error);
   }
 }
 
@@ -16835,7 +16844,15 @@ class ServiceError extends CustomError {
   }
 }
 
-module.exports = { ValueError, SchemaError, ServiceError };
+class DisplayTypeError extends CustomError {
+  constructor() {
+    super();
+    this.name = "DisplayTypeError";
+    this.message =
+      "No valid display type was found in feedback payload.  Check the Looking Glass documentation for valid display types and make sure your version of Looking Glass supports the display type you are trying to utilize.  Documentation: https://github.com/githubtrainig/looking-glass-action";
+  }
+}
+module.exports = { ValueError, SchemaError, ServiceError, DisplayTypeError };
 
 
 /***/ }),
