@@ -4,7 +4,8 @@
   "description": "provides feedback to learners based on the outcome of their validation lab grader workflow",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "ncc build main.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,10 @@
   "homepage": "https://github.com/githubtraining/looking-glass-action#readme",
   "dependencies": {
     "@actions/core": "^1.2.6",
-    "@actions/github": "^4.0.0"
+    "@actions/github": "^4.0.0",
+    "joi": "^17.4.0"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3"
   }
 }

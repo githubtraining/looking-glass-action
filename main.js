@@ -1,34 +1,64 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
+
+const { ServiceError, DisplayTypeError } = require("./lib/customErrors");
+const LookingGlass = require("./lib/lookingGlass");
 
 async function run() {
   try {
-    const fb = core.getInput("feedback");
-    if (!fb) return;
-
-    const report = JSON.parse(fb);
-
-    const token = core.getInput("github-token");
-    const octokit = github.getOctokit(token);
-
-    if (report.type !== "actions") {
-      // decide how to display feedback based on paylaod from reort.type
-      const res = await octokit.issues.create({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        title: "Oh no!",
-        labels: ["bug"],
-        body: report.msg,
-      });
-
-      return;
+    const feedBack = core.getInput("feedback");
+    if (!feedBack) {
+      core.setFailed(
+        "No feedback payload was provided by a previous action, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
     }
-    if (report.level === "warning" || report.level === "fatal") {
-      core.warning(report.msg);
-    } else {
-      core.info(report.msg);
+
+    const lookingGlass = new LookingGlass(JSON.parse(feedBack));
+
+    const reports = lookingGlass.validatePayloadSignature();
+
+    if (reports.length < 1) {
+      core.setFailed(
+        "No reports were found in the feedback payload, please view the documentation for using the Looking Glass at https://github.com/githubtraining/looking-glass-action"
+      );
+    }
+
+    for (const report of reports) {
+      switch (report.display_type) {
+        case "issues":
+          const {
+            payload,
+            res,
+          } = await lookingGlass.provideFeedbackUsingIssues(report);
+          console.log(res);
+
+          if (res.status !== 201) {
+            throw new ServiceError(res);
+          }
+
+          break;
+        case "actions":
+          const err = lookingGlass.provideFeedbackUsingActions(report);
+          if (err !== undefined) {
+            throw new ServiceError(report.error);
+          }
+          break;
+        default:
+          throw new DisplayTypeError();
+      }
     }
   } catch (error) {
+    // use actions to throw author errors in actions.debug
+    // log to learner with core.log that error happened and isn't on them
+    if (
+      error.name === "SchemaError" ||
+      error.name === "ValueError" ||
+      error.name === "ServiceError" ||
+      error.name === "DisplayTypeError"
+    ) {
+      core.debug(JSON.stringify(error));
+      core.setFailed(error.userMessage);
+    }
+
     core.setFailed(error);
   }
 }
