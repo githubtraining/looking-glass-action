@@ -61,5 +61,5 @@ In this example Looking Glass reads the output of a previous action which has an
   uses: githubtraining/looking-glass-action@main
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
-    feedback: ${{ steps.events.outputs.report }}
+    feedback: ${{ steps.events.outputs.reports }}
 ```
