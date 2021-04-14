@@ -56,11 +56,21 @@ Looking Glass is a reporting agent that provides feedback to users based on a pa
 In this example Looking Glass reads the output of a previous action which has an ID of `events` as supplied input for the `feedback` parameter.
 
 ```yaml
-- name: Troubleshooting info for grading
-  uses: githubtraining/looking-glass-action@main
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    feedback: ${{ steps.events.outputs.reports }}
+jobs:
+  grade_lab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: My grading action
+        uses: mygrading/action-for-this-lab@v1
+        id: events
+        with:
+          input_1: whatever input you need
+
+      - name: Your Feedback
+        uses: githubtraining/looking-glass-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          feedback: ${{ steps.events.outputs.reports }}
 ```
 
 ## Author Resources
