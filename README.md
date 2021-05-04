@@ -1,3 +1,5 @@
+[![Node.js CI](https://github.com/githubtraining/looking-glass-action/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/githubtraining/looking-glass-action/actions/workflows/node.js.yml)
+
 # Looking Glass
 
 Looking Glass is a reporting agent that provides feedback to users based on a payload signature. Looking Glass **reads the output of a previous GitHub action** and then reports that output to the repository in a configurable manner. To use Looking Glass your action will need to **set output** matching the following payload signature:
