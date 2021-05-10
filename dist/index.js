@@ -19157,9 +19157,6 @@ class LookingGlass {
       }
       if (!report.isCorrect) {
         core.info(actionsFeedback.failure(report.error));
-        this.forceWorkflowToFail(
-          `Your solution is incorrect, check for an issue titled "${payload.title}" for more information`
-        );
       }
     }
 
