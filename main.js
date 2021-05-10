@@ -39,7 +39,7 @@ async function run() {
         case "actions":
           const err = lookingGlass.provideFeedbackUsingActions(report);
           if (err !== undefined) {
-            throw new ServiceError(report.error);
+            throw err;
           }
           break;
         default:

@@ -12348,7 +12348,7 @@ async function run() {
         case "actions":
           const err = lookingGlass.provideFeedbackUsingActions(report);
           if (err !== undefined) {
-            throw new ServiceError(report.error);
+            throw err;
           }
           break;
         default:
@@ -19161,10 +19161,10 @@ class LookingGlass {
     }
 
     if (report.msg === "Error") {
-      const serviceError = new ServiceError(report.error);
+      const err = actionsFeedback.error(new ServiceError(report.error));
 
-      this.forceWorkflowToFail(serviceError.userMessage);
-      error = serviceError;
+      this.forceWorkflowToFail(err);
+      error = err;
     }
     return error;
   }
