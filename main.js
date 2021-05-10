@@ -57,6 +57,7 @@ async function run() {
     ) {
       core.debug(JSON.stringify(error));
       core.setFailed(error.userMessage);
+      return;
     }
 
     core.setFailed(error);
