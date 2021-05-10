@@ -313,16 +313,22 @@ describe("Looking Glass Methods", () => {
       );
       expect(lookingGlass.provideFeedbackUsingActions).toHaveBeenCalledTimes(1);
     });
-    it("Should force wofklow to fail and set the serviceError.userMessage as the parameter to forceWorkflowToFail when there is an non course related error", () => {
+    it("Should force wofklow to fail and set the error payload as the parameter to forceWorkflowToFail when there is an non course related error", () => {
       const consoleSpy = jest.spyOn(lookingGlass, "forceWorkflowToFail");
       const validatedReports = lookingGlass.validatePayloadSignature(
         lookingGlass.feedback.reports
       );
       lookingGlass.provideFeedbackUsingActions(validatedReports[0]);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Oops, looks like something isn't working right.  This is most likely not your fault!  Please open an issue in this lab's template repository!"
-      );
+      expect(consoleSpy).toHaveBeenCalledWith({
+        name: "ServiceError",
+        payload: {
+          expected: "the expected string",
+          got: "the gotten string",
+        },
+        userMessage:
+          "Oops, looks like something isn't working right.  This is most likely not your fault!  Please open an issue in this lab's template repository!",
+      });
     });
   });
 });
