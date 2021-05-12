@@ -12364,8 +12364,9 @@ async function run() {
       error.name === "ServiceError" ||
       error.name === "DisplayTypeError"
     ) {
-      core.debug(JSON.stringify(error));
+      core.debug(JSON.stringify({ name: error.name, message: error.message }));
       core.setFailed(error.userMessage);
+      return;
     }
 
     core.setFailed(error);
