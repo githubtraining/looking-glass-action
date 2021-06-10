@@ -12348,7 +12348,7 @@ async function run() {
         case "actions":
           const err = lookingGlass.provideFeedbackUsingActions(report);
           if (err !== undefined) {
-            throw new ServiceError(report.error);
+            throw err;
           }
           break;
         default:
@@ -12364,8 +12364,9 @@ async function run() {
       error.name === "ServiceError" ||
       error.name === "DisplayTypeError"
     ) {
-      core.debug(JSON.stringify(error));
+      core.debug(JSON.stringify({ name: error.name, message: error.message }));
       core.setFailed(error.userMessage);
+      return;
     }
 
     core.setFailed(error);
@@ -19157,17 +19158,15 @@ class LookingGlass {
       }
       if (!report.isCorrect) {
         core.info(actionsFeedback.failure(report.error));
-        this.forceWorkflowToFail(
-          `Your solution is incorrect, check for an issue titled "${payload.title}" for more information`
-        );
+        this.forceWorkflowToFail("Your solution is incorrect, view the grading results for more info")
       }
     }
 
     if (report.msg === "Error") {
-      const serviceError = new ServiceError(report.error);
+      const err = actionsFeedback.error(new ServiceError(report.error));
 
-      this.forceWorkflowToFail(serviceError.userMessage);
-      error = serviceError;
+      this.forceWorkflowToFail(err);
+      error = err;
     }
     return error;
   }

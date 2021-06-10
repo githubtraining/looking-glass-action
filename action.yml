@@ -1,4 +1,4 @@
-name: "Provide feedback"
+name: "Provide Feedback"
 author: mattdavis0351
 description: "use the output of other grading actions to provide feedback to learners"
 inputs:
@@ -12,3 +12,7 @@ inputs:
 runs:
   using: "node12"
   main: "dist/index.js"
+
+branding:
+  icon: eye
+  color: gray-dark

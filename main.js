@@ -39,7 +39,7 @@ async function run() {
         case "actions":
           const err = lookingGlass.provideFeedbackUsingActions(report);
           if (err !== undefined) {
-            throw new ServiceError(report.error);
+            throw err;
           }
           break;
         default:
@@ -55,8 +55,9 @@ async function run() {
       error.name === "ServiceError" ||
       error.name === "DisplayTypeError"
     ) {
-      core.debug(JSON.stringify(error));
+      core.debug(JSON.stringify({ name: error.name, message: error.message }));
       core.setFailed(error.userMessage);
+      return;
     }
 
     core.setFailed(error);
