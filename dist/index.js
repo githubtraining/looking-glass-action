@@ -19158,6 +19158,7 @@ class LookingGlass {
       }
       if (!report.isCorrect) {
         core.info(actionsFeedback.failure(report.error));
+        this.forceWorkflowToFail("Your solution is incorrect, view the grading results for more info")
       }
     }
 
