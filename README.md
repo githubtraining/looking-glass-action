@@ -64,13 +64,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: My grading action
-        uses: mygrading/action-for-this-lab@v1
+        uses: mygrading/action-for-this-lab@v1.0.0
         id: events
         with:
           input_1: whatever input you need
 
       - name: Grading results
-        uses: githubtraining/looking-glass-action@v1
+        uses: githubtraining/looking-glass-action@v1.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           feedback: ${{ steps.events.outputs.reports }}
@@ -85,7 +85,7 @@ Are you authoring a hands-on lab? Here is a living collection of tools and resou
 
 ## Trouble With Looking Glass
 
-Looking glass is currently in release `version 0.1.0` which means it's still quite young and we are shipping to learn from our authors. If you run into a problem with Looking Glass please open an issue in this repository and feel free to ping @github/content-and-enablement in Slack if you don't receive a follow up quickly!
+Looking glass is currently in release `version 1.0.0` which means it's still quite young and we are shipping to learn from our authors. If you run into a problem with Looking Glass please open an issue in this repository and feel free to ping @github/content-and-enablement in Slack if you don't receive a follow up quickly!
 
 It's also important to check the releases page often since Looking Glass is likely to receive new features and other updates frequently leading up to it's first major release.
 
