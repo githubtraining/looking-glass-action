@@ -64,13 +64,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: My grading action
-        uses: mygrading/action-for-this-lab@v1
+        uses: mygrading/action-for-this-lab@v1.0.0
         id: events
         with:
           input_1: whatever input you need
 
       - name: Grading results
-        uses: githubtraining/looking-glass-action@v1
+        uses: githubtraining/looking-glass-action@v1.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           feedback: ${{ steps.events.outputs.reports }}
@@ -79,13 +79,14 @@ jobs:
 
 ## Author Resources
 
-Are you authoring a hands-on lab? Here is a living collection of tools and resources to help you develop labs with greater velocity 😄
+Are you authoring an exercise? Here is a living collection of tools and resources to help you develop exercises with greater velocity 😄
 
-- [Looking-Glass-Payload-Tester](https://github.com/githubtraining/looking-glass-payload-tester), A tool to help you test your Looking Glass payloads manually so that you don't have to step through each lab multiple times to determine if Looking Glass is going to behave as you expect.
+- [Looking-Glass-Payload-Tester](https://github.com/githubtraining/looking-glass-payload-tester), A tool to help you test your Looking Glass payloads manually so that you don't have to step through each exercise multiple times to determine if Looking Glass is going to behave as you expect.
+- [Author Pack](https://cautious-funicular-058b0cc8.pages.github.io/), A collection of guides, tools and other documentation to help you author exercises!
 
 ## Trouble With Looking Glass
 
-Looking glass is currently in release `version 0.1.0` which means it's still quite young and we are shipping to learn from our authors. If you run into a problem with Looking Glass please open an issue in this repository and feel free to ping @github/content-and-enablement in Slack if you don't receive a follow up quickly!
+Looking glass is currently in release `version 1.0.0` which means it's still quite young and we are shipping to learn from our authors. If you run into a problem with Looking Glass please open an issue in this repository and feel free to ping @github/content-and-enablement in Slack if you don't receive a follow up quickly!
 
 It's also important to check the releases page often since Looking Glass is likely to receive new features and other updates frequently leading up to it's first major release.
 
