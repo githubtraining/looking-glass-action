@@ -82,7 +82,7 @@ jobs:
 Are you authoring an exercise? Here is a living collection of tools and resources to help you develop exercises with greater velocity 😄
 
 - [Looking-Glass-Payload-Tester](https://github.com/githubtraining/looking-glass-payload-tester), A tool to help you test your Looking Glass payloads manually so that you don't have to step through each exercise multiple times to determine if Looking Glass is going to behave as you expect.
-- [Author Pack](https://cautious-funicular-058b0cc8.pages.github.io/), A collection of guides, tools and other documentation to help you author exercises!
+- [Author Pack](https://githubtraining.github.io/author-pack/#/), A collection of guides, tools and other documentation to help you author exercises!
 
 ## Trouble With Looking Glass
 
