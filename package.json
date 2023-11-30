@@ -1,6 +1,6 @@
 {
   "name": "looking-glass-action",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "provides feedback to learners based on the outcome of their validation lab grader workflow",
   "main": "index.js",
   "scripts": {
